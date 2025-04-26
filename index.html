@@ -80,12 +80,12 @@
         });
 
         const data = await response.json();
-        cocktails = data.list;
+        cocktails = data.list.map(record => record.fields);
 
         const select = document.getElementById('cocktailSelect');
         cocktails.forEach(cocktail => {
           const option = document.createElement('option');
-          option.value = cocktail.Id;
+          option.value = cocktail.Name;
           option.textContent = cocktail.Name;
           select.appendChild(option);
         });
@@ -99,9 +99,9 @@
       const quantity = parseInt(document.getElementById('quantity').value) || 1;
       const resultDiv = document.getElementById('result');
       const cocktailImageDiv = document.getElementById('cocktailImage');
-      const selectedId = select.value;
+      const selectedName = select.value;
 
-      const cocktail = cocktails.find(c => c.Id == selectedId);
+      const cocktail = cocktails.find(c => c.Name == selectedName);
 
       if (!cocktail) {
         resultDiv.style.display = 'none';
