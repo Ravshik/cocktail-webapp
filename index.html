@@ -13,32 +13,25 @@
       color: #333;
     }
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: 0 auto;
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    h1 {
-      text-align: center;
-      font-size: 24px;
+    img {
+      width: 100%;
+      border-radius: 12px;
       margin-bottom: 20px;
-    }
-    label {
-      font-weight: 500;
-      margin-top: 10px;
-      display: block;
     }
     select, input, button {
       width: 100%;
       padding: 10px;
-      margin-top: 8px;
-      margin-bottom: 16px;
+      margin: 8px 0;
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 16px;
-      box-sizing: border-box;
     }
     button {
       background-color: #34b7f1;
@@ -46,6 +39,7 @@
       font-weight: bold;
       border: none;
       cursor: pointer;
+      margin-top: 16px;
     }
     .result {
       background: #e0f7fa;
@@ -59,69 +53,82 @@
   <div class="container">
     <h1>🍹 Калькулятор коктейлей</h1>
 
-    <label for="cocktail">Выберите коктейль:</label>
-    <select id="cocktail">
+    <select id="cocktailSelect">
       <option value="">-- Выберите коктейль --</option>
-      <option value="Мохито">Мохито</option>
-      <option value="Маргарита">Маргарита</option>
-      <option value="Пина Колада">Пина Колада</option>
     </select>
 
-    <label for="quantity">Количество порций:</label>
-    <input type="number" id="quantity" min="1" value="1">
+    <input type="number" id="quantity" min="1" value="1" placeholder="Количество порций">
 
     <button onclick="calculate()">Рассчитать</button>
 
-    <div class="result" id="result" style="display:none;"></div>
+    <div id="cocktailImage" style="margin-top: 20px;"></div>
+    <div id="result" class="result" style="display: none;"></div>
   </div>
 
   <script>
-    const cocktails = {
-      "Мохито": {
-        Ingredients: "50 мл белого рома\n30 мл лаймового сока\n6 листиков мяты\n2 ч.л. сахара\nСодовая",
-        Method: "Смешать все ингредиенты в бокале",
-        Glass: "Хайбол"
-      },
-      "Маргарита": {
-        Ingredients: "50 мл текилы\n25 мл трипл-сека\n25 мл лаймового сока",
-        Method: "Встряхнуть в шейкере со льдом",
-        Glass: "Коктейльный бокал"
-      },
-      "Пина Колада": {
-        Ingredients: "30 мл белого рома\n30 мл кокосового крема\n90 мл ананасового сока",
-        Method: "Смешать в блендере",
-        Glass: "Харрикейн"
+    const API_URL = "https://nocodb.puzzlebot.top/api/v1/db/data/noco/pyg2dwdbo6vo2gf/mlugkemxcndp29x/rows";
+    const API_TOKEN = "2muz62RkOkcBplLsOvR0xS47X0Urrc5BKg0IOtIN";
+    let cocktails = [];
+
+    async function loadCocktails() {
+      try {
+        const response = await fetch(API_URL, {
+          headers: {
+            'accept': 'application/json',
+            'xc-token': API_TOKEN
+          }
+        });
+
+        const data = await response.json();
+        cocktails = data.list;
+
+        const select = document.getElementById('cocktailSelect');
+        cocktails.forEach(cocktail => {
+          const option = document.createElement('option');
+          option.value = cocktail.Id;
+          option.textContent = cocktail.Name;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Ошибка загрузки коктейлей:', error);
       }
-    };
+    }
 
     function calculate() {
-      const cocktailName = document.getElementById('cocktail').value;
+      const select = document.getElementById('cocktailSelect');
       const quantity = parseInt(document.getElementById('quantity').value) || 1;
       const resultDiv = document.getElementById('result');
+      const cocktailImageDiv = document.getElementById('cocktailImage');
+      const selectedId = select.value;
 
-      if (!cocktailName) {
-        resultDiv.innerHTML = "<strong>Пожалуйста, выберите коктейль.</strong>";
-        resultDiv.style.display = "block";
+      const cocktail = cocktails.find(c => c.Id == selectedId);
+
+      if (!cocktail) {
+        resultDiv.style.display = 'none';
+        cocktailImageDiv.innerHTML = '';
         return;
       }
 
-      const drink = cocktails[cocktailName];
+      cocktailImageDiv.innerHTML = `<img src="${cocktail.Image}" alt="${cocktail.Name}">`;
 
-      const ingredientsList = drink.Ingredients.split('\n').map(item => {
-        return item.replace(/(\d+)\s*(мл|гр|шт)/gi, (match, amount, unit) => {
+      const ingredientsList = cocktail.Ingredients.split(',').map(item => {
+        return item.replace(/(\d+)\s*(мл|гр|шт|ч\.л\.)/gi, (match, amount, unit) => {
           return `${amount * quantity} ${unit.toLowerCase()}`;
         });
       });
 
       resultDiv.innerHTML = `
-        <h3>${cocktailName}</h3>
+        <h3>${cocktail.Name}</h3>
         <p><strong>Ингредиенты на ${quantity} порций:</strong></p>
-        <ul>${ingredientsList.map(item => `<li>${item}</li>`).join('')}</ul>
-        <p><strong>Метод приготовления:</strong> ${drink.Method}</p>
-        <p><strong>Подача:</strong> ${drink.Glass}</p>
+        <ul>${ingredientsList.map(i => `<li>${i.trim()}</li>`).join('')}</ul>
+        <p><strong>Метод:</strong> ${cocktail.Method || 'Не указан'}</p>
+        <p><strong>Подача:</strong> ${cocktail.Glass || 'Не указана'}</p>
+        <p><strong>Украшение:</strong> ${cocktail.Decoration || 'Не указано'}</p>
       `;
-      resultDiv.style.display = "block";
+      resultDiv.style.display = 'block';
     }
+
+    window.onload = loadCocktails;
   </script>
 </body>
 </html>
