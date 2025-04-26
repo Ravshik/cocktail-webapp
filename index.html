@@ -66,10 +66,8 @@
   </div>
 
   <script>
-  
-const API_URL = "https://nocodb.puzzlebot.top/api/v1/db/data/v1/CocktailsXsPackCsv";
-const API_TOKEN = "2muz62RkOkcBplLsOvR0xS47X0Urrc5BKg0IOtIN";
-
+    const API_URL = "https://nocodb.puzzlebot.top/api/v1/db/data/v1/CocktailsXsPackCsv";
+    const API_TOKEN = "2muz62RkOkcBplLsOvR0xS47X0Urrc5BKg0IOtIN";
     let cocktails = [];
 
     async function loadCocktails() {
@@ -114,7 +112,7 @@ const API_TOKEN = "2muz62RkOkcBplLsOvR0xS47X0Urrc5BKg0IOtIN";
       cocktailImageDiv.innerHTML = `<img src="${cocktail.Image}" alt="${cocktail.Name}">`;
 
       const ingredientsList = cocktail.Ingredients.split(',').map(item => {
-        return item.replace(/(\d+)\s*(мл|гр|шт|ч\.л\.)/gi, (match, amount, unit) => {
+        return item.replace(/(\d+)\s*(\u043c\u043b|\u0433\u0440|\u0448\u0442|\u0447\.\u043b\.)/gi, (match, amount, unit) => {
           return `${amount * quantity} ${unit.toLowerCase()}`;
         });
       });
@@ -124,7 +122,7 @@ const API_TOKEN = "2muz62RkOkcBplLsOvR0xS47X0Urrc5BKg0IOtIN";
         <p><strong>Ингредиенты на ${quantity} порций:</strong></p>
         <ul>${ingredientsList.map(i => `<li>${i.trim()}</li>`).join('')}</ul>
         <p><strong>Метод:</strong> ${cocktail.Method || 'Не указан'}</p>
-        <p><strong>Подача:</strong> ${cocktail.Glass || 'Не указана'}</p>
+        <p><strong>Посуда:</strong> ${cocktail.Glass || 'Не указана'}</p>
         <p><strong>Украшение:</strong> ${cocktail.Decoration || 'Не указано'}</p>
       `;
       resultDiv.style.display = 'block';
@@ -134,3 +132,4 @@ const API_TOKEN = "2muz62RkOkcBplLsOvR0xS47X0Urrc5BKg0IOtIN";
   </script>
 </body>
 </html>
+
